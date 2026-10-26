@@ -17,9 +17,9 @@ app.use(express.json())
 const frondend_url = process.env.FRONTEND_URL
 
 app.use(cors({
-  origin: frondend_url,
-  credentials: true
-}))
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+}));
 
 app.use(cookieParser())
 const port = process.env.PORT || 3001

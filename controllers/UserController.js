@@ -115,9 +115,77 @@ const getUser = async (req, res, next) => {
   }
 };
 
+// update own profile
+
+const updateMyProfile = async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    const updates = {};
+
+    // Update name only if provided
+    if (name !== undefined) {
+      if (!name.trim()) {
+        return res.status(400).json({
+          message: 'Name cannot be empty.',
+        });
+      }
+      updates.name = name.trim();
+    }
+
+    // Update email only if provided
+    if (email !== undefined) {
+      if (!email.trim()) {
+        return res.status(400).json({
+          message: 'Email cannot be empty.',
+        });
+      }
+      updates.email = email.trim();
+    }
+
+    // Check that at least one field is provided
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        message: 'Please provide a field to update.',
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      updates,
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found.',
+      });
+    }
+
+    res.status(200).json({
+      message: 'Profile updated successfully.',
+      user,
+    });
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.status(409).json({
+        message: 'This email is already in use.',
+      });
+    }
+
+    res.status(500).json({
+      message: 'Unable to update profile.',
+    });
+  }
+};
+
+
 module.exports = {
   getAllUsers,
   updateUser,
   deleteUser,
-  getUser
+  getUser,
+  updateMyProfile
 };
